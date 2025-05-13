@@ -1,6 +1,6 @@
 using System;
 using System.Threading;
-using NLog;
+using Common.Logging;
 
 namespace TitaniumAS.Opc.Client.Da.Internal.Requests
 {
@@ -17,7 +17,7 @@ namespace TitaniumAS.Opc.Client.Da.Internal.Requests
                     }
                     catch (Exception ex)
                     {
-                        LogManager.GetCurrentClassLogger().Error("Cancel failed.", ex);
+                        LogManager.GetLogger<IAsyncRequest>().Error("Cancel failed.", ex);
                     }
                 }
                 );

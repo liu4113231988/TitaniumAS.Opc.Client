@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NLog;
+using Common.Logging;
 using TitaniumAS.Opc.Client.Common;
 using TitaniumAS.Opc.Client.Common.Internal;
 using TitaniumAS.Opc.Client.Common.Wrappers;
@@ -25,7 +25,7 @@ namespace TitaniumAS.Opc.Client.Da
     /// <seealso cref="TitaniumAS.Opc.Da.IOpcDaServer" />
     public class OpcDaServer : IOpcDaServer
     {
-        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Log = LogManager.GetLogger<OpcDaServer>();
         private readonly List<OpcDaGroup> _groups = new List<OpcDaGroup>();
         private readonly ConnectionPoint<IOPCShutdown> _shutdownConnectionPoint;
         private string _clientName;
@@ -118,7 +118,7 @@ namespace TitaniumAS.Opc.Client.Da
             if (IsConnected)
                 throw new InvalidOperationException("Already connected to the OPC DA server.");
 
-            Log.Trace("Connecting to '{0}' opc server", Uri);
+            Log.TraceFormat("Connecting to '{0}' opc server", Uri);
 
             var enumerator = new OpcServerEnumeratorAuto();
             Tuple<string, Guid> hostAndCLSID = UrlParser.Parse(
@@ -129,14 +129,14 @@ namespace TitaniumAS.Opc.Client.Da
             ComObject = Com.CreateInstanceWithBlanket(hostAndCLSID.Item2, hostAndCLSID.Item1, null, ComProxyBlanket);
             _shutdownConnectionPoint.TryConnect(ComObject);
 
-            Log.Trace("Connected to '{0}' opc server.", Uri);
+            Log.TraceFormat("Connected to '{0}' opc server.", Uri);
             try
             {
                 ClientName = _clientName;
             }
             catch (Exception ex)
             {
-                Log.Warn(ex, "Cannot setup name of client.");
+                Log.Warn("Cannot setup name of client.", ex);
             }
             OnConnectionStateChanged(true);
         }
@@ -158,12 +158,13 @@ namespace TitaniumAS.Opc.Client.Da
             if (!IsConnected)
                 return;
 
-            Log.Info("Disconnecting from '{0}' opc server", Uri);
+            Log.TraceFormat("Disconnecting from '{0}' opc server", Uri);
             if (!rpcFailed)
             {
                 _shutdownConnectionPoint.Disconnect();
             }
             RemoveAllGroups(rpcFailed);
+
             if (ComObject != null)
             {
                 try
@@ -172,12 +173,12 @@ namespace TitaniumAS.Opc.Client.Da
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex, "Failed to release opc server's COM object");
+                    Log.Error("Failed to release opc server's COM object", ex);
                 }
             }
 
             ComObject = null;
-            Log.Info("Disconnected from '{0}' opc server", Uri);
+            Log.TraceFormat("Disconnected from '{0}' opc server", Uri);
             OnConnectionStateChanged(false);
         }
 
@@ -394,13 +395,6 @@ namespace TitaniumAS.Opc.Client.Da
             return @group;
         }
 
-        public OpcDaGroup GetGroup(string name)
-        {
-            CheckConnected();
-
-            return GetGroupByName(name);
-        }
-
         /// <summary>
         ///     Synchronizes the server groups. It means existing groups will be replaced with new groups. It fires GroupsChanged
         ///     event after synchronization.
@@ -413,7 +407,7 @@ namespace TitaniumAS.Opc.Client.Da
             // Dispose old groups
             foreach (OpcDaGroup @group in _groups)
             {
-                ((IDisposable)@group).Dispose();
+                ((IDisposable) @group).Dispose();
                 OnGroupsChanged(new OpcDaServerGroupsChangedEventArgs(null, @group));
             }
             _groups.Clear();
@@ -429,20 +423,13 @@ namespace TitaniumAS.Opc.Client.Da
         private void OnRpcFailed(object sender, RpcFailedEventArgs args)
         {
             if (args.UserData != this) return;
-            
-            if (args.Error == unchecked((int)0x800706BA))
-            {
-                Log.Error("Opc server unavailable....");
-                ComObject = null;
-                return;
-            }
             try
             {
                 DisconnectImpl(true);
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Disconnect failed.");
+                Log.Error("Disconnect failed.",ex);
             }
             try
             {
@@ -450,7 +437,7 @@ namespace TitaniumAS.Opc.Client.Da
             }
             catch (Exception ex)
             {
-                Log.Error($"Destroy event of group '{ex}' throws exception .", Uri);
+                Log.ErrorFormat("Error during shutdown of '{0}' opc server.", ex, Uri);
             }
         }
 
@@ -462,7 +449,7 @@ namespace TitaniumAS.Opc.Client.Da
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Disconnect failed.");
+                Log.Error("Disconnect failed.", ex);
             }
 
             try
@@ -471,7 +458,7 @@ namespace TitaniumAS.Opc.Client.Da
             }
             catch (Exception ex)
             {
-                Log.Error($"Destroy event of group '{ex}' throws exception .", Uri);
+                Log.ErrorFormat("Error during shutdown of '{0}' opc server.", ex, Uri);
             }
         }
 
@@ -486,7 +473,7 @@ namespace TitaniumAS.Opc.Client.Da
             {
                 if (ComObject == null)
                     return default(T);
-                return (T)Activator.CreateInstance(typeof(T), ComObject, this);
+                return (T) Activator.CreateInstance(typeof (T), ComObject, this);
             }
             catch
             {
@@ -508,7 +495,7 @@ namespace TitaniumAS.Opc.Client.Da
         {
             foreach (OpcDaGroup opcDaGroup in _groups.ToArray())
             {
-                TryRemoveGroup(opcDaGroup, rpcFailed);
+                TryRemoveGroup(opcDaGroup,rpcFailed);
             }
             _groups.Clear();
         }
@@ -532,15 +519,15 @@ namespace TitaniumAS.Opc.Client.Da
 
         private List<string> EnumerateGroupNames(OpcDaEnumScope scope = OpcDaEnumScope.All)
         {
-            object enumeratorObj = As<OpcServer>().CreateGroupEnumerator((int)scope);
-            var enumerator = (IEnumString)enumeratorObj;
+            object enumeratorObj = As<OpcServer>().CreateGroupEnumerator((int) scope);
+            var enumerator = (IEnumString) enumeratorObj;
             return enumerator.EnumareateAllAndRelease(OpcConfiguration.BatchSize);
         }
 
         private List<OpcDaGroup> EnumerateGroups(OpcDaEnumScope scope = OpcDaEnumScope.All)
         {
-            object enumeratorObj = As<OpcServer>().CreateGroupEnumerator((int)scope);
-            var enumerator = (IEnumUnknown)enumeratorObj;
+            object enumeratorObj = As<OpcServer>().CreateGroupEnumerator((int) scope);
+            var enumerator = (IEnumUnknown) enumeratorObj;
             List<object> interfaces = enumerator.EnumareateAllAndRelease(OpcConfiguration.BatchSize);
             return interfaces.Select(i => new OpcDaGroup(i, this)).ToList();
         }
@@ -567,14 +554,14 @@ namespace TitaniumAS.Opc.Client.Da
             DisconnectImpl();
 
             _disposed = true;
-            Log.Debug("Opc server '{0}' disposed.", Uri);
+            Log.DebugFormat("Opc server '{0}' disposed.", Uri);
         }
 
         private bool TryRemoveGroup(OpcDaGroup @group, bool rpcFailed = false)
         {
             try
             {
-                ((IDisposable)@group).Dispose();
+                ((IDisposable) @group).Dispose();
                 if (!rpcFailed)
                 {
                     As<OpcServer>().RemoveGroup(@group.ServerHandle, false);
@@ -585,7 +572,7 @@ namespace TitaniumAS.Opc.Client.Da
             }
             catch (Exception ex)
             {
-                Log.Error($"Destroy event of group '{ex}' throws exception .", @group.Name);
+                Log.ErrorFormat("Cannot remove group '{0}'.", ex, @group.Name);
                 return false;
             }
         }

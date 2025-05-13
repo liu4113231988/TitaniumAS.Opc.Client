@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Common.Logging;
 using TitaniumAS.Opc.Client.Da.Wrappers;
 
 namespace TitaniumAS.Opc.Client.Da.Browsing
@@ -12,7 +12,7 @@ namespace TitaniumAS.Opc.Client.Da.Browsing
     /// <seealso cref="TitaniumAS.Opc.Da.Browsing.IOpcDaBrowser" />
     public class OpcDaBrowser3 : IOpcDaBrowser
     {
-        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Log = LogManager.GetLogger<OpcDaBrowser3>();
         private OpcDaServer _opcDaServer;
 
         /// <summary>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using NLog;
+using Common.Logging;
 using TitaniumAS.Opc.Client.Common.Internal;
 using TitaniumAS.Opc.Client.Interop.System;
 
@@ -13,7 +13,7 @@ namespace TitaniumAS.Opc.Client.Common
     public class OpcServerEnumeratorAuto
     {
         private static readonly Guid OpcServerListCLSID = new Guid("13486D51-4821-11D2-A494-3CB306C10000");
-        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Log = LogManager.GetLogger<OpcServerEnumeratorAuto>();
         private readonly ComProxyBlanket _comProxyBlanket;
         private string _cachedLocalhost;
 
@@ -80,7 +80,7 @@ namespace TitaniumAS.Opc.Client.Common
                     }
                     catch (Exception ex)
                     {
-                        Log.Warn($"ProgId to CLSID with '{ex}' enumerator failed.",
+                        Log.WarnFormat("ProgId to CLSID with '{0}' enumerator failed.", ex,
                             opcServerListEnumerator.GetType());
                     }
                 }
@@ -121,7 +121,7 @@ namespace TitaniumAS.Opc.Client.Common
                     }
                     catch (Exception ex)
                     {
-                        Log.Warn($"ProgId to CLSID with '{ex}' enumerator failed.",
+                        Log.WarnFormat("ProgId to CLSID with '{0}' enumerator failed.", ex,
                             opcServerListEnumerator.GetType());
                     }
                 }
@@ -161,7 +161,7 @@ namespace TitaniumAS.Opc.Client.Common
                     }
                     catch (Exception ex)
                     {
-                        Log.Warn("ProgId to CLSID with '{ex}' enumerator failed.",
+                        Log.WarnFormat("ProgId to CLSID with '{0}' enumerator failed.", ex,
                             opcServerListEnumerator.GetType());
                     }
                 }
@@ -226,7 +226,7 @@ namespace TitaniumAS.Opc.Client.Common
                     }
                     catch (Exception ex)
                     {
-                        Log.Warn($"Enumeration with '{ex}' enumerator failed.",
+                        Log.WarnFormat("Enumeration with '{0}' enumerator failed.", ex,
                             opcServerListEnumerator.GetType());
                     }
                 }
@@ -252,7 +252,7 @@ namespace TitaniumAS.Opc.Client.Common
                     }
                     catch (Exception ex)
                     {
-                        Log.Warn($"Failed to get categories for server with CLSID '{ex}'.",
+                        Log.WarnFormat("Failed to get categories for server with CLSID '{0}'.", ex,
                             serverDescription.CLSID);
                     }
                 }
@@ -268,7 +268,7 @@ namespace TitaniumAS.Opc.Client.Common
             }
             catch (Exception ex)
             {
-                Log.Warn($"Enumerator '{ex}' not created.", typeof(OpcServerList2Enumerator));
+                Log.WarnFormat("Enumerator '{0}' not created.", ex, typeof (OpcServerList2Enumerator));
             }
 
             try
@@ -277,7 +277,7 @@ namespace TitaniumAS.Opc.Client.Common
             }
             catch (Exception ex)
             {
-                Log.Warn($"Enumerator '{ex}' not created.", typeof(OpcServerListEnumerator));
+                Log.WarnFormat("Enumerator '{0}' not created.", ex, typeof (OpcServerListEnumerator));
             }
             return result;
         }

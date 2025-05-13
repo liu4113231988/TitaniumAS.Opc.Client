@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.ComTypes;
-using NLog;
+using Common.Logging;
 using TitaniumAS.Opc.Client.Common;
 using TitaniumAS.Opc.Client.Interop.Da;
 using TitaniumAS.Opc.Client.Interop.Helpers;
@@ -14,7 +14,7 @@ namespace TitaniumAS.Opc.Client.Da
     /// <seealso cref="TitaniumAS.Opc.Da.OpcDaVQTE" />
     public class OpcDaItemValue : OpcDaVQTE
     {
-        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Log = LogManager.GetLogger<OpcDaItemValue>();
 
         /// <summary>
         /// Gets or sets the item to which the value object belongs to.
@@ -46,7 +46,7 @@ namespace TitaniumAS.Opc.Client.Da
             }
             catch (Exception ex)
             {
-                Log.Error(ex,"Cannot create OpcDaItemValue object.");
+                Log.Error("Cannot create OpcDaItemValue object.", ex);
                 return new OpcDaItemValue[0];
             }
         }
@@ -72,7 +72,7 @@ namespace TitaniumAS.Opc.Client.Da
             }
             catch (Exception ex)
             {
-                Log.Error(ex,"Cannot create OpcDaItemValue object.");
+                Log.Error("Cannot create OpcDaItemValue object.", ex);
                 return new OpcDaItemValue[0];
             }
         }
@@ -99,7 +99,7 @@ namespace TitaniumAS.Opc.Client.Da
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Cannot create OpcDaItemValue object.");
+                Log.Error("Cannot create OpcDaItemValue object.", ex);
                 return new OpcDaItemValue[0];
             }
         }

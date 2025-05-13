@@ -62,21 +62,21 @@ namespace TitaniumAS.Opc.Client.Da.Browsing
             }
             catch (Exception ex1)
             {
-                Log.Warn(ex1, "Failed to browse address space using IOPCBrowse (OPC DA 3.x).");
+                Log.Warn("Failed to browse address space using IOPCBrowse (OPC DA 3.x).", ex1);
                 try
                 {
                     return _browser2.GetElements(parentItemId, filter, propertiesQuery);
                 }
                 catch (Exception ex2)
                 {
-                    Log.Warn(ex2, "Failed to browse address space using IOPCBrowseServerAddressSpace (OPC DA 2.x).");
+                    Log.Warn("Failed to browse address space using IOPCBrowseServerAddressSpace (OPC DA 2.x).", ex2);
                     try
                     {
                         return _browser1.GetElements(parentItemId, filter, propertiesQuery);
                     }
                     catch (Exception ex3)
                     {
-                        Log.Warn(ex3, "Failed to browse address space using IOPCBrowseServerAddressSpace (OPC DA 1.x).");
+                        Log.Warn("Failed to browse address space using IOPCBrowseServerAddressSpace (OPC DA 1.x).", ex2);
                         throw new AggregateException(ex3, ex2, ex1);
                     }
                 }
@@ -100,21 +100,21 @@ namespace TitaniumAS.Opc.Client.Da.Browsing
             }
             catch (Exception ex1)
             {
-                Log.Warn(ex1, "Failed to get properties using IOPCBrowse (OPC DA 3.x).");
+                Log.Warn("Failed to get properties using IOPCBrowse (OPC DA 3.x).", ex1);
                 try
                 {
                     return _browser2.GetProperties(itemIds, propertiesQuery);
                 }
                 catch (Exception ex2)
                 {
-                    Log.Warn(ex2, "Failed to get properties using IOPCItemProperties (OPC DA 2.x).");
+                    Log.Warn("Failed to get properties using IOPCItemProperties (OPC DA 2.x).", ex2);
                     try
                     {
                         return _browser1.GetProperties(itemIds, propertiesQuery);
                     }
                     catch (Exception ex3)
                     {
-                        Log.Warn(ex3, "Failed to get properties using IOPCItemProperties (OPC DA 1.x).");
+                        Log.Warn("Failed to get properties using IOPCItemProperties (OPC DA 1.x).", ex2);
                         throw new AggregateException(ex3, ex2, ex1);
                     }
                 }

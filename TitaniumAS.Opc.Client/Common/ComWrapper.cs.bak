@@ -1,20 +1,20 @@
-﻿using NLog;
-using System;
+﻿using System;
 using System.Collections;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using Common.Logging;
 using TitaniumAS.Opc.Client.Common.Wrappers;
 
 namespace TitaniumAS.Opc.Client.Common
 {
-    public abstract class ComWrapper : IComWrapper
+    public abstract class ComWrapper: IComWrapper
     {
         public static event EventHandler<RpcFailedEventArgs> RpcFailed;
         private const int RPC_S_SERVER_UNAVAILABLE = unchecked((int)0x800706BA);
 
         public object UserData { get; set; }
-        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Log = LogManager.GetLogger<ComWrapper>();
 
         protected ComWrapper()
         {
@@ -35,16 +35,16 @@ namespace TitaniumAS.Opc.Client.Common
         {
             try
             {
-                Log.Trace($"Calling '{methodName}' Object: {comObject.GetHashCode()} {ArgumentsToString(arguments)}");
+                Log.Trace(m => m("Calling '{0}' Object: {1} {2}", methodName, comObject.GetHashCode(),ArgumentsToString(arguments)));
                 var result = comAction();
-                Log.Trace($"Calling '{methodName}' Object: {comObject.GetHashCode()} {ResultToString(result)}");
+                Log.Trace(m => m("Success: '{0}' Object: {1} result: {2}", methodName, comObject.GetHashCode(),ResultToString(result)));
                 return result;
             }
             catch (InvalidCastException ex) //workaround for correct Com.QueryInterface calls
             {
                 if (ex.Message.Contains("0x800706BA"))  //find HRESULT: 0x800706BA - RPC_SERVER_S_UNAVAILABLE
                 {
-                    var errorString = string.Format("Invalid Cast Error: {0} Method name: {1} Object: {2}", ex, methodName, comObject.GetHashCode());
+                    var errorString = string.Format("Error: {0} Method name: {1} Object: {2}", ex, methodName, comObject.GetHashCode());
                     Log.Error(errorString);
                     object userData = UserData;
                     OnRpcFailed(new RpcFailedEventArgs(userData, RPC_S_SERVER_UNAVAILABLE));
@@ -53,26 +53,13 @@ namespace TitaniumAS.Opc.Client.Common
             }
             catch (COMException ex)
             {
-                var errorString = string.Format("COM Error: {0} Method name: {1} Object: {2}", ex, methodName, comObject.GetHashCode());
+                var errorString = string.Format("Error: {0} Method name: {1} Object: {2}", ex, methodName,comObject.GetHashCode());
                 Log.Error(errorString);
                 if (IsRpcError(ex.ErrorCode))
                 {
                     object userData = UserData;
-                    if (ex.Message.Contains("0x800706BA"))
-                    {
-                        OnRpcFailed(new RpcFailedEventArgs(userData, RPC_S_SERVER_UNAVAILABLE));
-                    }
-                    else
-                    {
-                        OnRpcFailed(new RpcFailedEventArgs(userData, ex.ErrorCode));
-                    }
+                    OnRpcFailed(new RpcFailedEventArgs(userData, ex.ErrorCode));
                 }
-                throw;
-            }
-            catch (Exception ex)
-            {
-                var errorString = string.Format("Error3: {0} Method name: {1} Object: {2}", ex, methodName, comObject.GetHashCode());
-                Log.Error(errorString);
                 throw;
             }
         }
@@ -99,7 +86,7 @@ namespace TitaniumAS.Opc.Client.Common
                 {
                     builder.AppendFormat("[{0}]", string.Join(", ", argument));
                 }
-                else
+                else 
                 {
                     builder.AppendFormat(", {0}", argument);
                 }
@@ -119,43 +106,30 @@ namespace TitaniumAS.Opc.Client.Common
         {
             try
             {
-                Log.Trace($"Calling '{methodName}' Object: {comObject.GetHashCode()} {ArgumentsToString(arguments)}");
+                Log.Trace(m => m("Calling '{0}' Object: {1} {2}", methodName, comObject.GetHashCode(), ArgumentsToString(arguments)));
                 comAction();
-                Log.Trace($"Success: '{methodName}' Object: {comObject.GetHashCode()}", methodName);
+                Log.Trace(m => m("Success: '{0}' Object: {1}", methodName, comObject.GetHashCode()));
             }
             catch (InvalidCastException ex) //workaround for correct Com.QueryInterface calls
             {
                 if (ex.Message.Contains("0x800706BA"))  //find HRESULT: 0x800706BA - RPC_SERVER_S_UNAVAILABLE
                 {
-                    var errorString = string.Format("Invalid Cast Error: {0} Method name: {1} Object: {2}", ex, methodName, comObject.GetHashCode());
+                    var errorString = string.Format("Error: {0} Method name: {1} Object: {2}", ex, methodName, comObject.GetHashCode());
                     Log.Error(errorString);
                     object userData = UserData;
                     OnRpcFailed(new RpcFailedEventArgs(userData, RPC_S_SERVER_UNAVAILABLE));
                 }
                 throw;
             }
-            catch (COMException ex)
+            catch (COMException ex) 
             {
-                var errorString = string.Format("COM Error: {0} Method name: {1} Object: {2}", ex, methodName, comObject.GetHashCode());
+                var errorString = string.Format("Error: {0} Method name: {1} Object: {2}", ex, methodName, comObject.GetHashCode());
                 Log.Error(errorString);
                 if (IsRpcError(ex.ErrorCode))
                 {
                     object userData = UserData;
-                    if (ex.Message.Contains("0x800706BA"))
-                    {
-                        OnRpcFailed(new RpcFailedEventArgs(userData, RPC_S_SERVER_UNAVAILABLE));
-                    }
-                    else
-                    {
-                        OnRpcFailed(new RpcFailedEventArgs(userData, ex.ErrorCode));
-                    }
+                    OnRpcFailed(new RpcFailedEventArgs(userData, ex.ErrorCode));
                 }
-                throw;
-            }
-            catch (Exception ex)
-            {
-                var errorString = string.Format("Error: {0} Method name: {1} Object: {2}", ex, methodName, comObject.GetHashCode());
-                Log.Error(errorString);
                 throw;
             }
         }

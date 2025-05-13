@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Common.Logging;
+using NLog;
 using TitaniumAS.Opc.Client.Common.Wrappers;
 
 namespace TitaniumAS.Opc.Client.Common.Internal
 {
     internal class OpcServerListEnumerator : IOpcServerListEnumerator
     {
-        private static readonly ILog Log = LogManager.GetLogger<OpcServerListEnumerator>();
+        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
         private readonly OpcServerList _opcServerList;
 
         public OpcServerListEnumerator(object enumerator)
@@ -28,7 +28,7 @@ namespace TitaniumAS.Opc.Client.Common.Internal
             }
             catch (Exception ex)
             {
-                Log.Warn("Failed to enumerate classes of categories.", ex);
+                Log.Warn(ex, "Failed to enumerate classes of categories.");
                 return null;
             }
         }
@@ -61,7 +61,7 @@ namespace TitaniumAS.Opc.Client.Common.Internal
             }
             catch (Exception ex)
             {
-                Log.Warn("Failed to enumerate classes of categories.", ex);
+                Log.Warn(ex, "Failed to enumerate classes of categories.");
             }
             return servers;
         }
@@ -74,7 +74,7 @@ namespace TitaniumAS.Opc.Client.Common.Internal
             }
             catch (Exception ex)
             {
-                Log.Warn("Failed to get class details.", ex);
+                Log.Warn(ex, "Failed to get class details.");
                 return new OpcServerDescription(host, clsid);
             }
         }

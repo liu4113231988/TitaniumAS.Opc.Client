@@ -137,7 +137,7 @@ namespace TitaniumAS.Opc.Client.Da.Browsing
                 }
                 catch (Exception ex)
                 {
-                    Log.Error($"Destroy event of group '{ex}' throws exception .", itemId);
+                    Log.ErrorFormat("Cannot get properties for item '{0}'.", ex, itemId);
                     result[i] = OpcDaItemProperties.CreateEmpty();
                 }
             }

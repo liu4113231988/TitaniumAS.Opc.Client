@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using NLog;
+using Common.Logging;
 using IConnectionPoint = System.Runtime.InteropServices.ComTypes.IConnectionPoint;
 
 namespace TitaniumAS.Opc.Client.Common.Internal
 {
     internal class ConnectionPoint<T> : IDisposable where T : class
     {
-        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Log = LogManager.GetLogger<ConnectionPoint<T>>();
         private readonly T _sink;
         private IConnectionPoint _connectionPoint;
         private int? _cookie;
@@ -52,7 +52,7 @@ namespace TitaniumAS.Opc.Client.Common.Internal
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed to connect to '{ex}' connection point.");
+                Log.ErrorFormat("Failed to connect to '{0}' connection point.", ex, typeof (T).Name);
             }
         }
 
@@ -62,9 +62,9 @@ namespace TitaniumAS.Opc.Client.Common.Internal
             if (IsConnected)
                 throw new InvalidOperationException("Already attached to the connection point.");
 
-            var connectionPointContainer = (IConnectionPointContainer)comServer;
+            var connectionPointContainer = (IConnectionPointContainer) comServer;
 
-            var riid = typeof(T).GUID;
+            var riid = typeof (T).GUID;
             connectionPointContainer.FindConnectionPoint(ref riid, out _connectionPoint);
             int cookie;
             _connectionPoint.Advise(_sink, out cookie);
@@ -90,7 +90,7 @@ namespace TitaniumAS.Opc.Client.Common.Internal
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed to unsubscribe callback.");
+                Log.Error("Failed to unsubscribe callback.", ex);
             }
         }
     }

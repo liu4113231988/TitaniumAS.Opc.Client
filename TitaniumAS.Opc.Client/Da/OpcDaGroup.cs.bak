@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using NLog;
+using Common.Logging;
 using TitaniumAS.Opc.Client.Common;
 using TitaniumAS.Opc.Client.Da.Internal;
 using TitaniumAS.Opc.Client.Da.Internal.Requests;
@@ -24,7 +24,7 @@ namespace TitaniumAS.Opc.Client.Da
     /// <seealso cref="TitaniumAS.Opc.Da.IOpcDaGroup" />
     public class OpcDaGroup : IDisposable, IOpcDaGroup
     {
-        private static readonly ILogger Log = LogManager.GetCurrentClassLogger();
+        private static readonly ILog Log = LogManager.GetLogger<OpcDaGroup>();
         private readonly List<OpcDaItem> _items = new List<OpcDaItem>();
         private AsyncRequestManager _asyncRequestManager;
         private int _clientHandle;
@@ -363,7 +363,7 @@ namespace TitaniumAS.Opc.Client.Da
         public TimeSpan UpdateRate
         {
             get { return _updateRate; }
-            set { SetState(new OpcDaGroupState { UpdateRate = value }); }
+            set { SetState(new OpcDaGroupState {UpdateRate = value}); }
         }
 
         /// <summary>
@@ -386,7 +386,7 @@ namespace TitaniumAS.Opc.Client.Da
         public int ClientHandle
         {
             get { return _clientHandle; }
-            set { SetState(new OpcDaGroupState { ClientHandle = value }); }
+            set { SetState(new OpcDaGroupState {ClientHandle = value}); }
         }
 
         /// <summary>
@@ -398,7 +398,7 @@ namespace TitaniumAS.Opc.Client.Da
         public bool IsActive
         {
             get { return _isActive; }
-            set { SetState(new OpcDaGroupState { IsActive = value }); }
+            set { SetState(new OpcDaGroupState {IsActive = value}); }
         }
 
         /// <summary>
@@ -410,7 +410,7 @@ namespace TitaniumAS.Opc.Client.Da
         public TimeSpan TimeBias
         {
             get { return _timeBias; }
-            set { SetState(new OpcDaGroupState { TimeBias = value }); }
+            set { SetState(new OpcDaGroupState {TimeBias = value}); }
         }
 
         /// <summary>
@@ -422,7 +422,7 @@ namespace TitaniumAS.Opc.Client.Da
         public float PercentDeadband
         {
             get { return _percentDeadband; }
-            set { SetState(new OpcDaGroupState { PercentDeadband = value }); }
+            set { SetState(new OpcDaGroupState {PercentDeadband = value}); }
         }
 
         /// <summary>
@@ -434,7 +434,7 @@ namespace TitaniumAS.Opc.Client.Da
         public CultureInfo Culture
         {
             get { return _culture; }
-            set { SetState(new OpcDaGroupState { Culture = value }); }
+            set { SetState(new OpcDaGroupState {Culture = value}); }
         }
 
         /// <summary>
@@ -502,12 +502,12 @@ namespace TitaniumAS.Opc.Client.Da
         /// </returns>
         public OpcDaItemValue[] Read(IList<OpcDaItem> items, OpcDaDataSource dataSource = OpcDaDataSource.Cache)
         {
-            CheckItems(items);
+            CheckItems(items);  
             CheckSupported(OpcDaGroupFeatures.Read);
             int[] serverHandles = ArrayHelpers.GetServerHandles(items);
 
             HRESULT[] ppErrors;
-            OPCITEMSTATE[] ppItemValues = As<OpcSyncIO>().Read((OPCDATASOURCE)dataSource, serverHandles, out ppErrors);
+            OPCITEMSTATE[] ppItemValues = As<OpcSyncIO>().Read((OPCDATASOURCE) dataSource, serverHandles, out ppErrors);
             OpcDaItemValue[] result = OpcDaItemValue.Create(this, ppItemValues, ppErrors);
             OnValuesChanged(new OpcDaItemValuesChangedEventArgs(result));
             return result;
@@ -602,7 +602,7 @@ namespace TitaniumAS.Opc.Client.Da
             if (serverHandles.Length != maxAge.Count)
                 throw new ArgumentException("Invalid size of maxAge", "maxAge");
 
-            //            int[] intMaxAge = ArrayHelpers.CreateMaxAgeArray(maxAge, items.Count);
+//            int[] intMaxAge = ArrayHelpers.CreateMaxAgeArray(maxAge, items.Count);
 
             DateTimeOffset[] timestamps;
             HRESULT[] errors;
@@ -900,7 +900,7 @@ namespace TitaniumAS.Opc.Client.Da
             {
                 if (ComObject == null)
                     return default(T);
-                return (T)Activator.CreateInstance(typeof(T), ComObject, Server);
+                return (T) Activator.CreateInstance(typeof (T), ComObject, Server);
             }
             catch
             {
@@ -1088,7 +1088,7 @@ namespace TitaniumAS.Opc.Client.Da
             }
             catch (Exception ex)
             {
-                Log.Error($"Destroy event of group '{ex}' throws exception .", Name);
+                Log.ErrorFormat("Failed to release COM object of '{0}' group.", ex, Name);
             }
 
             try
@@ -1097,7 +1097,7 @@ namespace TitaniumAS.Opc.Client.Da
             }
             catch (Exception ex)
             {
-                Log.Error($"Destroy event of group '{ex}' throws exception .", Name);
+                Log.ErrorFormat("Destroy event of group '{0}' throws exception .", ex, Name);
             }
         }
 
